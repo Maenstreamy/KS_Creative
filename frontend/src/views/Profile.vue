@@ -6,11 +6,28 @@
         <div class="profile-card">
           <div class="profile-info">
             <div class="profile-header">
-              <img
-                src="../assets/pictures/avatar.svg"
-                alt="avatar"
-                class="profile-avatar"
-              />
+              <div class="avatar-wrapper">
+                <label
+                  class="avatar-form"
+                  v-on:mouseenter="avatarHandler"
+                  v-on:mouseleave="avatarHandler"
+                >
+                  <img
+                    src="../assets/pictures/avatar.svg"
+                    alt="avatar"
+                    class="profile-avatar"
+                    ref="avatar"
+                  />
+                  <span class="change-avatar" ref="change">ИЗМЕНИТЬ</span>
+                  <input
+                    type="file"
+                    hidden
+                    class="loading-avatar"
+                    ref="file"
+                    v-on:change="downloadAvatar()"
+                  />
+                </label>
+              </div>
               <div class="profile-title">
                 <h2 class="profile-name">
                   {{ $store.state.currentUser.name }}
@@ -77,6 +94,7 @@ export default {
     return {
       ordersList: [],
       currentId: "",
+      file: "",
     };
   },
   created() {
@@ -96,6 +114,30 @@ export default {
         this.loginError = "Упс! Что-то пошло не так :(";
         console.log(error);
       });
+  },
+  methods: {
+    downloadAvatar() {
+      this.file = this.$refs.file.files[0];
+      if (this.file) {
+        this.$refs.avatar.src = URL.createObjectURL(this.file);
+        localStorage.setItem("myAvatar", this.$refs.avatar.src);
+      }
+    },
+    avatarHandler(event) {
+      if (event.type == "mouseenter") {
+        this.$refs.change.style.display = "block";
+        this.$refs.avatar.style.opacity = "0.6";
+      }
+      if (event.type == "mouseleave") {
+        this.$refs.change.style.display = "none";
+        this.$refs.avatar.style.opacity = "1";
+      }
+    },
+  },
+  mounted() {
+    if (localStorage.getItem("myAvatar") !== null) {
+      this.$refs.avatar.src = localStorage.getItem("myAvatar");
+    }
   },
 };
 </script>
@@ -131,8 +173,44 @@ export default {
   align-items: center;
   margin-bottom: 50px;
 }
-.profile-avatar {
+.avatar-wrapper {
+  width: 180px;
+  height: 180px;
   margin-right: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+}
+.avatar-form {
+  width: 180px;
+  height: 180px;
+  margin-right: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: block;
+  background: #000;
+  cursor: pointer;
+}
+.profile-avatar {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  object-fit: cover;
+  z-index: 20;
+  opacity: 1;
+  background: #fff;
+}
+.change-avatar {
+  position: absolute;
+  top: 79px;
+  color: #fff;
+  left: 45px;
+  z-index: 10;
+  display: none;
+  font-weight: 800;
+}
+.change-avatar-active {
+  visibility: visible;
 }
 .profile-name {
   font-weight: 500;
